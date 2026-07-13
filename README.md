@@ -17,7 +17,13 @@ Open **http://localhost:4200** in your browser.
 
 ### Without Docker (Frontend Only)
 
-Open `public/index.html` in any modern browser. Scores and auth won't work without the backend.
+Due to browser security policies, camera access is blocked when opening files directly via the `file://` protocol. To play using hand gestures, you must serve the files over HTTP.
+
+Run a simple local HTTP server from the `public` directory:
+```bash
+python3 -m http.server 8081
+```
+Then open **http://localhost:8081** in your browser. (Note: Scores and auth won't work without the Rust backend).
 
 ## Controls
 
@@ -33,6 +39,20 @@ Open `public/index.html` in any modern browser. Scores and auth won't work witho
 | M | Toggle sound |
 | Enter | Start / Restart |
 
+### Camera / Gesture Controls
+
+Enable the camera in the left panel to play hands-free!
+
+| Gesture / Position | Action |
+|--------------------|--------|
+| Move hand to Screen-Left | Move left |
+| Move hand to Screen-Right | Move right |
+| Move hand to Bottom Zone | Soft drop |
+| Raise Index Finger ☝️ | Rotate clockwise |
+| Make a Fist ✊ | Hard drop |
+| Open Palm ✋ (in Center) | Hold piece |
+
+
 ## Features
 
 ### Gameplay
@@ -43,7 +63,9 @@ Open `public/index.html` in any modern browser. Scores and auth won't work witho
 - **Next Preview** — See the next 3 upcoming pieces
 - **Lock Delay** — Brief pause before piece locks, with move reset
 - **DAS** — Delayed Auto Shift for smooth left/right movement
+- **Camera Gesture Control** — Play hands-free using your webcam and physical hand signs (powered by MediaPipe Hands)
 - **Scoring** — Classic Tetris scoring (Single/Double/Triple/Tetris)
+
 - **20 Levels** — Speed increases every 10 lines cleared
 
 ### Audio & Visual
@@ -100,6 +122,7 @@ tetris-gen/
 │       ├── scoring.js          # Score, levels, speed
 │       ├── audio.js            # Web Audio API sounds
 │       ├── input.js            # Keyboard with DAS
+│       ├── gesture.js          # Webcam hand tracking controls
 │       ├── renderer.js         # Canvas rendering
 │       ├── game.js             # Game loop & state machine
 │       ├── main.js             # Entry point + auth integration

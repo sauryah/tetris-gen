@@ -11,15 +11,56 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
 </head>
 <body>
-  <div id="game-container">
-    <div id="top-bar">
-      <span id="player-name"></span>
-      <button id="login-btn" class="bar-btn">LOGIN</button>
-      <button id="logout-btn" class="bar-btn" style="display:none">LOGOUT</button>
-      <button id="scores-btn" class="bar-btn">SCORES</button>
+  <div id="app-layout">
+    <!-- Camera/Gesture Panel on the Left -->
+    <div id="camera-panel" class="retro-panel">
+      <div class="panel-header">GESTURES</div>
+      
+      <div class="webcam-wrapper">
+        <video id="webcam" autoplay playsinline style="display: none;"></video>
+        <canvas id="webcam-overlay"></canvas>
+        <div id="camera-placeholder" class="placeholder-active">
+          <div class="placeholder-icon">📷</div>
+          <div class="placeholder-text">CAMERA OFFLINE</div>
+          <div class="placeholder-subtext">Click ENABLE CAMERA to play with hand signs</div>
+        </div>
+      </div>
+
+      <div class="controls-row">
+        <button id="camera-toggle-btn" class="btn-primary">ENABLE CAMERA</button>
+        <div class="status-box">
+          STATUS: <span id="camera-status" class="status-red">OFFLINE</span>
+        </div>
+      </div>
+
+      <div class="detected-gesture-box">
+        DETECTED: <span id="detected-gesture-val">-</span>
+      </div>
+
+      <div class="gesture-guide">
+        <div class="guide-title">CONTROLS GUIDE:</div>
+        <div class="guide-grid">
+          <div class="guide-item"><span class="guide-action">⬅️ LEFT</span><span class="guide-desc">Hand in Left Zone</span></div>
+          <div class="guide-item"><span class="guide-action">➡️ RIGHT</span><span class="guide-desc">Hand in Right Zone</span></div>
+          <div class="guide-item"><span class="guide-action">⬇️ SOFT DROP</span><span class="guide-desc">Hand in Bottom Zone</span></div>
+          <div class="guide-item"><span class="guide-action">🔄 ROTATE</span><span class="guide-desc">Raise Index Finger ☝️</span></div>
+          <div class="guide-item"><span class="guide-action">⚡ HARD DROP</span><span class="guide-desc">Make a Fist ✊</span></div>
+          <div class="guide-item"><span class="guide-action">📥 HOLD PIECE</span><span class="guide-desc">Open Palm ✋</span></div>
+        </div>
+      </div>
     </div>
-    <canvas id="gameCanvas"></canvas>
-    <div id="sound-hint">M - toggle sound</div>
+
+    <!-- Tetris Game Container on the Right -->
+    <div id="game-container">
+      <div id="top-bar">
+        <span id="player-name"></span>
+        <button id="login-btn" class="bar-btn">LOGIN</button>
+        <button id="logout-btn" class="bar-btn" style="display:none">LOGOUT</button>
+        <button id="scores-btn" class="bar-btn">SCORES</button>
+      </div>
+      <canvas id="gameCanvas"></canvas>
+      <div id="sound-hint">M - toggle sound</div>
+    </div>
   </div>
 
   <div id="auth-modal" class="modal" style="display:none">
@@ -78,12 +119,17 @@
     </div>
   </div>
 
+  <!-- MediaPipe Libraries for Hand Tracking -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
   <script src="js/constants.js"></script>
   <script src="js/piece.js"></script>
   <script src="js/board.js"></script>
   <script src="js/scoring.js"></script>
   <script src="js/audio.js"></script>
   <script src="js/input.js"></script>
+  <script src="js/gesture.js"></script>
   <script src="js/renderer.js"></script>
   <script src="js/api.js"></script>
   <script src="js/auth.js"></script>

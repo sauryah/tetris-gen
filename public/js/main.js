@@ -11,6 +11,8 @@
   const game = new Game(canvas);
   const auth = new Auth();
   const leaderboard = new Leaderboard();
+  const gesture = new GestureController(game);
+  gesture.init();
   let lastTime = 0;
 
   const gameoverModal = document.getElementById('gameover-modal');
@@ -45,6 +47,9 @@
   });
 
   document.getElementById('login-btn').addEventListener('click', () => {
+    if (game.state === STATES.PLAYING) {
+      game.state = STATES.PAUSED;
+    }
     auth.show();
   });
 
@@ -53,6 +58,9 @@
   });
 
   document.getElementById('scores-btn').addEventListener('click', () => {
+    if (game.state === STATES.PLAYING) {
+      game.state = STATES.PAUSED;
+    }
     leaderboard.show('leaderboard');
   });
 
