@@ -1,6 +1,7 @@
 # TETRIS GEN
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![CodeQL](https://github.com/<owner>/tetris-gen/actions/workflows/codeql.yml/badge.svg)](https://github.com/<owner>/tetris-gen/actions/workflows/codeql.yml)
 
 A professional, retro-styled Tetris web game with user accounts and global leaderboards. Built with vanilla JavaScript, Rust (Actix-web), and PostgreSQL. Docker-compatible for instant play anywhere.
 
@@ -82,6 +83,7 @@ Open `public/index.html` in any modern browser. Scores and auth won't work witho
 | Auth | Argon2 + actix-session (cookie store) |
 | Server | Nginx:Alpine |
 | Container | Docker Compose (3 services) |
+| Security | GitHub CodeQL (JS + Rust) |
 
 ## Project Structure
 
@@ -122,6 +124,8 @@ tetris-gen/
 ├── Dockerfile                  # Nginx frontend container
 ├── docker-compose.yml          # 3-service stack
 ├── nginx.conf                  # Static files + API proxy
+├── .github/workflows/
+│   └── codeql.yml              # CodeQL security analysis (JS + Rust)
 ├── LICENSE                     # MIT License
 └── tetris.py                   # Original Python version
 ```
@@ -166,6 +170,13 @@ docker-compose down -v
 docker-compose down -v
 docker-compose up -d --build
 ```
+
+## Security
+
+This project uses [GitHub CodeQL](https://codeql.github.com/) for automated security analysis. CodeQL runs on every push/PR to `main` and weekly on Monday, scanning for:
+
+- **JavaScript/TypeScript** — XSS, prototype pollution, insecure dependencies
+- **Rust** — SQL injection, cleartext storage, crypto misuse, unsafe URL usage
 
 ## Browser Support
 
