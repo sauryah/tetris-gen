@@ -1,5 +1,7 @@
 # TETRIS GEN
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 A professional, retro-styled Tetris web game with user accounts and global leaderboards. Built with vanilla JavaScript, Node.js, and PostgreSQL. Docker-compatible for instant play anywhere.
 
 ## Quick Start
@@ -113,6 +115,7 @@ tetris-gen/
 ├── Dockerfile                  # Nginx frontend container
 ├── docker-compose.yml          # 3-service stack
 ├── nginx.conf                  # Static files + API proxy
+├── LICENSE                     # MIT License
 └── tetris.py                   # Original Python version
 ```
 
@@ -163,3 +166,7 @@ Works on any modern browser with Canvas support:
 - Chrome / Edge
 - Firefox
 - Safari
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
