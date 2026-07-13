@@ -18,13 +18,10 @@ services:
   api:
     build: ./server
     environment:
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_NAME: tetris
-      DB_USER: tetris
-      DB_PASSWORD: tetris123
+      DATABASE_URL: postgres://tetris:tetris123@db:5432/tetris
       SESSION_SECRET: tetris-gen-secret-change-in-prod
-      PORT: 3000
+      PORT: "3000"
+      RUST_LOG: info
     depends_on:
       db:
         condition: service_healthy
