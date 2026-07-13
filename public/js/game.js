@@ -210,7 +210,6 @@ class Game {
 
   update(dt) {
     this.input.update(dt);
-    this.renderer.updateParticles(dt);
 
     if (this.state !== STATES.PLAYING) return;
     if (!this.currentPiece) return;
@@ -225,11 +224,6 @@ class Game {
       if (this.board.isValid(this.currentPiece, 0, 1)) {
         this.currentPiece.y++;
         if (this.softDropping) this.scoring.addSoftDrop(1);
-      } else {
-        this.lockTimer += gravity;
-        if (this.lockTimer >= LOCK_DELAY) {
-          this.lockPiece();
-        }
       }
     }
 

@@ -27,20 +27,10 @@ pub async fn register(
         return Err(AppError::BadRequest("Password must be at least 4 characters".into()));
     }
 
-    let existing = sqlx::query_scalar::<_, i32>("SELECT id FROM users WHERE username = $1")
-        .bind(&username)
-        .fetch_optional(pool.get_ref())
-        .await
-        .map_err(|e| AppError::Internal(e.to_string()))?;
-
-    if existing.is_some() {
-        return Err(AppError::Conflict("Username already taken".into()));
-    }
-
     let salt = SaltString::generate(&mut OsRng);
     let hash = Argon2::default()
         .hash_password(password.as_bytes(), &salt)
-        .map_err(|e| AppError::Internal(e.to_string()))?
+        .map_err(|_| AppError::Internal("Failed to hash password".into()))?
         .to_string();
 
     let user = sqlx::query_as::<_, User>(
@@ -50,10 +40,17 @@ pub async fn register(
     .bind(&hash)
     .fetch_one(pool.get_ref())
     .await
-    .map_err(|e| AppError::Internal(e.to_string()))?;
+    .map_err(|e| {
+        if e.as_database_error().and_then(|d| d.code().map(|c| c == "23505")).unwrap_or(false) {
+            AppError::Conflict("Username already taken".into())
+        } else {
+            tracing::error!("Register DB error: {e}");
+            AppError::Internal("Registration failed".into())
+        }
+    })?;
 
     session.insert("user_id", user.id)
-        .map_err(|e| AppError::Internal(e.to_string()))?;
+        .map_err(|_| AppError::Internal("Failed to create session".into()))?;
 
     Ok(HttpResponse::Ok().json(json!({ "user": user })))
 }
@@ -69,24 +66,30 @@ pub async fn login(
     .bind(&body.username)
     .fetch_optional(pool.get_ref())
     .await
-    .map_err(|e| AppError::Internal(e.to_string()))?
+    .map_err(|e| {
+        tracing::error!("Login query error: {e}");
+        AppError::Internal("Login failed".into())
+    })?
     .ok_or_else(|| AppError::Unauthorized("Invalid username or password".into()))?;
 
     let row = sqlx::query_scalar::<_, String>("SELECT password_hash FROM users WHERE id = $1")
         .bind(user.id)
         .fetch_one(pool.get_ref())
         .await
-        .map_err(|e| AppError::Internal(e.to_string()))?;
+        .map_err(|e| {
+            tracing::error!("Login hash fetch error: {e}");
+            AppError::Internal("Login failed".into())
+        })?;
 
     let parsed = PasswordHash::new(&row)
-        .map_err(|e| AppError::Internal(e.to_string()))?;
+        .map_err(|_| AppError::Internal("Invalid password hash".into()))?;
 
     Argon2::default()
         .verify_password(body.password.as_bytes(), &parsed)
         .map_err(|_| AppError::Unauthorized("Invalid username or password".into()))?;
 
     session.insert("user_id", user.id)
-        .map_err(|e| AppError::Internal(e.to_string()))?;
+        .map_err(|_| AppError::Internal("Failed to create session".into()))?;
 
     Ok(HttpResponse::Ok().json(json!({ "user": user })))
 }
@@ -111,7 +114,10 @@ pub async fn me(
     .bind(user_id)
     .fetch_optional(pool.get_ref())
     .await
-    .map_err(|e| AppError::Internal(e.to_string()))?;
+    .map_err(|e| {
+        tracing::error!("Me query error: {e}");
+        AppError::Internal("Failed to fetch user".into())
+    })?;
 
     match user {
         Some(u) => Ok(HttpResponse::Ok().json(json!({ "user": u }))),

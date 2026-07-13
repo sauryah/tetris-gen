@@ -6,11 +6,17 @@ pub struct Config {
 
 impl Config {
     pub fn from_env() -> Self {
+        let session_secret = std::env::var("SESSION_SECRET")
+            .expect("SESSION_SECRET env var must be set (min 32 chars)");
+
+        if session_secret.len() < 32 {
+            panic!("SESSION_SECRET must be at least 32 characters");
+        }
+
         Self {
             database_url: std::env::var("DATABASE_URL")
-                .unwrap_or_else(|_| "postgres://tetris:tetris123@db:5432/tetris".into()),
-            session_secret: std::env::var("SESSION_SECRET")
-                .unwrap_or_else(|_| "tetris-gen-secret-change-in-prod".into()),
+                .expect("DATABASE_URL env var must be set"),
+            session_secret,
             port: std::env::var("PORT")
                 .unwrap_or_else(|_| "3000".into())
                 .parse()

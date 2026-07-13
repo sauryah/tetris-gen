@@ -19,7 +19,7 @@ services:
     build: ./server
     environment:
       DATABASE_URL: postgres://tetris:tetris123@db:5432/tetris
-      SESSION_SECRET: tetris-gen-secret-change-in-prod
+      SESSION_SECRET: tetris-gen-super-secret-session-key-change-me
       PORT: "3000"
       RUST_LOG: info
       SELF_DESTRUCT_KEY: destroy

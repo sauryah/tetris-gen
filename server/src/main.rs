@@ -40,13 +40,23 @@ async fn main() -> std::io::Result<()> {
         .finish()
         .unwrap();
 
+    let auth_governor_conf = GovernorConfigBuilder::default()
+        .seconds_per_request(5)
+        .burst_size(5)
+        .finish()
+        .unwrap();
+
     tracing::info!("Starting server on port {}", cfg.port);
 
     HttpServer::new(move || {
         let cors = Cors::default()
-            .allow_any_origin()
-            .allow_any_method()
-            .allow_any_header()
+            .allowed_origin("http://localhost:4200")
+            .allowed_origin("http://127.0.0.1:4200")
+            .allowed_methods(vec!["GET", "POST"])
+            .allowed_headers(vec![
+                actix_web::http::header::CONTENT_TYPE,
+                actix_web::http::header::AUTHORIZATION,
+            ])
             .supports_credentials()
             .max_age(3600);
 
@@ -70,6 +80,7 @@ async fn main() -> std::io::Result<()> {
                     .route("/health", web::get().to(health))
                     .service(
                         web::scope("/auth")
+                            .wrap(Governor::new(&auth_governor_conf))
                             .route("/register", web::post().to(routes::auth::register))
                             .route("/login", web::post().to(routes::auth::login))
                             .route("/logout", web::post().to(routes::auth::logout))

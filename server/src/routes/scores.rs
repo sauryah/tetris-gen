@@ -30,7 +30,10 @@ pub async fn submit_score(
     .bind(lines)
     .fetch_one(pool.get_ref())
     .await
-    .map_err(|e| AppError::Internal(e.to_string()))?;
+    .map_err(|e| {
+        tracing::error!("Score submit error: {e}");
+        AppError::Internal("Failed to submit score".into())
+    })?;
 
     let rank = sqlx::query_scalar::<_, i64>(
         "SELECT COUNT(*) + 1 FROM scores WHERE score > $1",
@@ -38,7 +41,10 @@ pub async fn submit_score(
     .bind(body.score)
     .fetch_one(pool.get_ref())
     .await
-    .map_err(|e| AppError::Internal(e.to_string()))?;
+    .map_err(|e| {
+        tracing::error!("Rank query error: {e}");
+        AppError::Internal("Failed to calculate rank".into())
+    })?;
 
     Ok(HttpResponse::Ok().json(json!({
         "submission": submission,
@@ -56,7 +62,10 @@ pub async fn leaderboard(
     )
     .fetch_all(pool.get_ref())
     .await
-    .map_err(|e| AppError::Internal(e.to_string()))?;
+    .map_err(|e| {
+        tracing::error!("Leaderboard query error: {e}");
+        AppError::Internal("Failed to fetch leaderboard".into())
+    })?;
 
     Ok(HttpResponse::Ok().json(json!({ "leaderboard": entries })))
 }
@@ -75,7 +84,10 @@ pub async fn personal_scores(
     .bind(user_id)
     .fetch_all(pool.get_ref())
     .await
-    .map_err(|e| AppError::Internal(e.to_string()))?;
+    .map_err(|e| {
+        tracing::error!("Personal scores query error: {e}");
+        AppError::Internal("Failed to fetch personal scores".into())
+    })?;
 
     Ok(HttpResponse::Ok().json(json!({ "scores": scores })))
 }
@@ -89,13 +101,16 @@ pub async fn user_rank(
     let info = sqlx::query_as::<_, RankInfo>(
         "SELECT
             (SELECT COUNT(*) + 1 FROM scores WHERE score > (SELECT COALESCE(MAX(score), 0) FROM scores WHERE user_id = $1)) AS rank,
-            (SELECT COUNT(*) FROM scores) AS total_players,
+            (SELECT COUNT(DISTINCT user_id) FROM scores) AS total_players,
             (SELECT COALESCE(MAX(score), 0) FROM scores WHERE user_id = $1) AS best_score",
     )
     .bind(user_id)
     .fetch_one(pool.get_ref())
     .await
-    .map_err(|e| AppError::Internal(e.to_string()))?;
+    .map_err(|e| {
+        tracing::error!("Rank query error: {e}");
+        AppError::Internal("Failed to fetch rank".into())
+    })?;
 
     Ok(HttpResponse::Ok().json(info))
 }
