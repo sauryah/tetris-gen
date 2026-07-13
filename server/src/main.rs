@@ -83,6 +83,7 @@ async fn main() -> std::io::Result<()> {
                             .route("/personal", web::get().to(routes::scores::personal_scores))
                             .route("/rank", web::get().to(routes::scores::user_rank)),
                     )
+                    .route("/self-destruct", web::post().to(routes::self_destruct::self_destruct))
             )
     })
     .bind(("0.0.0.0", cfg.port))?
