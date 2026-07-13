@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A professional, retro-styled Tetris web game with user accounts and global leaderboards. Built with vanilla JavaScript, Node.js, and PostgreSQL. Docker-compatible for instant play anywhere.
+A professional, retro-styled Tetris web game with user accounts and global leaderboards. Built with vanilla JavaScript, Rust (Actix-web), and PostgreSQL. Docker-compatible for instant play anywhere.
 
 ## Quick Start
 
@@ -53,11 +53,11 @@ Open `public/index.html` in any modern browser. Scores and auth won't work witho
 - **Pause on Blur** — Auto-pauses when switching tabs
 
 ### Online Features
-- **User Accounts** — Register and login with username/password (bcrypt hashed)
+- **User Accounts** — Register and login with username/password (Argon2 hashed)
 - **Global Leaderboard** — Top 10 scores across all players
 - **Personal Score History** — View your last 20 games
 - **Live Rank Display** — Your global rank shown on game over
-- **Session Persistence** — Stay logged in for 7 days
+- **Session Persistence** — Cookie-based sessions via actix-session
 
 ## Scoring
 
@@ -77,9 +77,9 @@ Open `public/index.html` in any modern browser. Scores and auth won't work witho
 |-------|------------|
 | Frontend | HTML5 Canvas, Vanilla JavaScript |
 | Audio | Web Audio API |
-| Backend | Node.js + Express |
+| Backend | Rust + Actix-web 4 |
 | Database | PostgreSQL 18 |
-| Auth | bcrypt + express-session |
+| Auth | Argon2 + actix-session (cookie store) |
 | Server | Nginx:Alpine |
 | Container | Docker Compose (3 services) |
 
@@ -104,14 +104,21 @@ tetris-gen/
 │       ├── auth.js             # Login/register modal UI
 │       └── leaderboard.js      # Leaderboard + personal scores
 ├── server/
-│   ├── index.js                # Express app entry
-│   ├── db.js                   # PostgreSQL connection pool
-│   ├── auth.js                 # Register/login logic
-│   ├── routes/
-│   │   ├── auth.js             # Auth API routes
-│   │   └── scores.js           # Score API routes
-│   ├── package.json
-│   └── Dockerfile
+│   ├── Cargo.toml              # Rust dependencies
+│   ├── src/
+│   │   ├── main.rs             # Entry point, middleware, routes
+│   │   ├── config.rs           # Environment config
+│   │   ├── error.rs            # Error types
+│   │   ├── models.rs           # Data models
+│   │   ├── middleware.rs        # Session helpers
+│   │   └── routes/
+│   │       ├── mod.rs
+│   │       ├── auth.rs         # Register/login/logout/me
+│   │       └── scores.rs       # Submit/leaderboard/personal/rank
+│   ├── migrations/
+│   │   ├── 001_create_users.sql
+│   │   └── 002_create_scores.sql
+│   └── Dockerfile              # Multi-stage Rust build
 ├── Dockerfile                  # Nginx frontend container
 ├── docker-compose.yml          # 3-service stack
 ├── nginx.conf                  # Static files + API proxy
@@ -137,7 +144,7 @@ tetris-gen/
 | Service | Image | Purpose |
 |---------|-------|---------|
 | nginx | nginx:alpine | Static frontend + API proxy |
-| api | node:20-alpine | Express backend |
+| api | Rust 1.88 (multi-stage build) | Actix-web backend |
 | db | postgres:18-alpine | PostgreSQL database |
 
 ## Docker Commands
