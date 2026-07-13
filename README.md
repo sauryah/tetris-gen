@@ -59,6 +59,7 @@ Open `public/index.html` in any modern browser. Scores and auth won't work witho
 - **Personal Score History** — View your last 20 games
 - **Live Rank Display** — Your global rank shown on game over
 - **Session Persistence** — Cookie-based sessions via actix-session
+- **Self-Destruct** — Nuclear option to wipe all data and tear down Docker
 
 ## Scoring
 
@@ -116,13 +117,15 @@ tetris-gen/
 │   │   └── routes/
 │   │       ├── mod.rs
 │   │       ├── auth.rs         # Register/login/logout/me
-│   │       └── scores.rs       # Submit/leaderboard/personal/rank
+│   │       ├── scores.rs       # Submit/leaderboard/personal/rank
+│   │       └── self_destruct.rs # Nuclear database wipe
 │   ├── migrations/
 │   │   ├── 001_create_users.sql
 │   │   └── 002_create_scores.sql
 │   └── Dockerfile              # Multi-stage Rust build
 ├── Dockerfile                  # Nginx frontend container
 ├── docker-compose.yml          # 3-service stack
+├── self-destruct.sh            # Nuclear cleanup script
 ├── nginx.conf                  # Static files + API proxy
 ├── .github/workflows/
 │   └── codeql.yml              # CodeQL security analysis (JS + Rust)
@@ -142,6 +145,7 @@ tetris-gen/
 | GET | `/api/scores/leaderboard` | No | Top 10 global |
 | GET | `/api/scores/personal` | Yes | User's history |
 | GET | `/api/scores/rank` | Yes | User's global rank |
+| POST | `/api/self-destruct` | Key | Wipe all database tables |
 
 ## Docker Services
 
@@ -169,6 +173,15 @@ docker-compose down -v
 # Rebuild from scratch
 docker-compose down -v
 docker-compose up -d --build
+
+# Self-destruct (nuclear option)
+# Wipe database via API
+curl -X POST http://localhost:4200/api/self-destruct \
+  -H "Content-Type: application/json" \
+  -d '{"key":"destroy"}'
+
+# Full teardown: DB + containers + images + build cache
+./self-destruct.sh
 ```
 
 ## Security
