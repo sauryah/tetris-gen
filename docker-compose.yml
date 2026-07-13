@@ -1,0 +1,42 @@
+services:
+  db:
+    image: postgres:18-alpine
+    ports:
+      - "4221:5432"
+    environment:
+      POSTGRES_DB: tetris
+      POSTGRES_USER: tetris
+      POSTGRES_PASSWORD: tetris123
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tetris -d tetris"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: ./server
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: tetris
+      DB_USER: tetris
+      DB_PASSWORD: tetris123
+      SESSION_SECRET: tetris-gen-secret-change-in-prod
+      PORT: 3000
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  nginx:
+    build: .
+    ports:
+      - "4200:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  pgdata:
